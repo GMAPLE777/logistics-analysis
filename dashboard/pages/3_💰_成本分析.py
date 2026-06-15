@@ -17,8 +17,8 @@ st.title('💰 成本与折扣分析')
 
 try:
     df = load_data()
-except Exception:
-    st.error('数据未加载')
+except Exception as e:
+    st.error(f'数据未加载: {e}')
     st.stop()
 
 analyzer = LogisticsAnalyzer(df)

@@ -1,7 +1,12 @@
 """数据清洗模块 — 缺失值、异常值、重复值处理"""
 
+import logging
+
 import pandas as pd
 import numpy as np
+from scipy import stats
+
+logger = logging.getLogger(__name__)
 
 
 class DataCleaner:
@@ -43,9 +48,13 @@ class DataCleaner:
                     self.df[col].fillna(median, inplace=True)
                     self.log.append(f'列 {col} 用中位数 {median} 填充 {n_missing} 条')
                 else:
-                    mode = self.df[col].mode()[0]
-                    self.df[col].fillna(mode, inplace=True)
-                    self.log.append(f'列 {col} 用众数 "{mode}" 填充 {n_missing} 条')
+                    mode = self.df[col].mode()
+                    if len(mode) > 0:
+                        self.df[col].fillna(mode[0], inplace=True)
+                        self.log.append(f'列 {col} 用众数 "{mode[0]}" 填充 {n_missing} 条')
+                    else:
+                        self.df.drop(columns=[col], inplace=True)
+                        self.log.append(f'删除列 {col}（全为缺失值）')
             elif strategy == 'drop':
                 self.df.dropna(subset=[col], inplace=True)
                 self.log.append(f'删除列 {col} 中 {n_missing} 行缺失值')
@@ -89,12 +98,12 @@ class DataCleaner:
                     self.log.append(f'列 {col} IQR 截断 {n_outliers} 个异常值')
 
             elif method == 'zscore':
-                from scipy import stats
-                z = np.abs(stats.zscore(self.df[col].dropna()))
+                col_data = self.df[col].dropna()
+                z = np.abs(stats.zscore(col_data))
                 n_outliers = (z > threshold).sum()
                 if n_outliers > 0:
-                    mask = z <= threshold
-                    self.df = self.df[mask].copy()
+                    outlier_idx = col_data.index[z > threshold]
+                    self.df = self.df.drop(index=outlier_idx).copy()
                     self.log.append(f'列 {col} Z-score 删除 {n_outliers} 个异常值')
 
         return self
@@ -107,8 +116,8 @@ class DataCleaner:
 
     def clean(self):
         """执行清洗，返回清洗后的 DataFrame 和日志"""
-        print(f'[DataCleaner] 清洗完成，共 {len(self.log)} 项操作:')
+        logger.info('清洗完成，共 %d 项操作:', len(self.log))
         for entry in self.log:
-            print(f'  - {entry}')
-        print(f'  最终数据形状: {self.df.shape}')
+            logger.info('  - %s', entry)
+        logger.info('  最终数据形状: %s', self.df.shape)
         return self.df, self.log

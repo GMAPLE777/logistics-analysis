@@ -1,7 +1,11 @@
 """数据分析模块 — 物流指标计算与多维分析"""
 
+import logging
+
 import pandas as pd
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class LogisticsAnalyzer:
@@ -16,6 +20,10 @@ class LogisticsAnalyzer:
     def basic_stats(self):
         """汇总指标"""
         total = len(self.df)
+        if total == 0:
+            logger.warning('数据为空，无法计算统计指标')
+            return {}
+
         on_time = (self.df['reached_on_time'] == 0).sum()
 
         stats = {
@@ -167,19 +175,21 @@ class LogisticsAnalyzer:
 
         # 仓库洞察
         wh = delivery['by_warehouse']
-        best_wh = wh.iloc[0]
-        worst_wh = wh.iloc[-1]
-        insights.append(
-            f'仓库 {best_wh["warehouse_block"]} 准时率最高（{best_wh["on_time_rate"]}%），'
-            f'仓库 {worst_wh["warehouse_block"]} 最低（{worst_wh["on_time_rate"]}%）'
-        )
+        if len(wh) > 0:
+            best_wh = wh.iloc[0]
+            worst_wh = wh.iloc[-1]
+            insights.append(
+                f'仓库 {best_wh["warehouse_block"]} 准时率最高（{best_wh["on_time_rate"]}%），'
+                f'仓库 {worst_wh["warehouse_block"]} 最低（{worst_wh["on_time_rate"]}%）'
+            )
 
         # 运输方式洞察
         ship = delivery['by_shipment']
-        best_ship = ship.iloc[0]
-        insights.append(
-            f'运输方式 {best_ship["mode_of_shipment"]} 准时率最高（{best_ship["on_time_rate"]}%）'
-        )
+        if len(ship) > 0:
+            best_ship = ship.iloc[0]
+            insights.append(
+                f'运输方式 {best_ship["mode_of_shipment"]} 准时率最高（{best_ship["on_time_rate"]}%）'
+            )
 
         # 折扣洞察
         if 'cost' in self.results:

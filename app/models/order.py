@@ -1,6 +1,6 @@
 """订单数据模型 — 映射 Kaggle E-Commerce Shipping Data"""
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, func
+from sqlalchemy import Column, Integer, String, Float, DateTime, Index, func
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -9,6 +9,12 @@ Base = declarative_base()
 class Order(Base):
     """物流订单表"""
     __tablename__ = 'orders'
+    __table_args__ = (
+        Index('idx_warehouse_block', 'warehouse_block'),
+        Index('idx_mode_of_shipment', 'mode_of_shipment'),
+        Index('idx_product_importance', 'product_importance'),
+        Index('idx_reached_on_time', 'reached_on_time'),
+    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     warehouse_block = Column(String(1), nullable=False, comment='仓库区块 A-F')

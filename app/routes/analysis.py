@@ -6,6 +6,8 @@ from app.routes.data import load_orders_df
 
 analysis_bp = Blueprint('analysis', __name__)
 
+_ERROR_NOT_LOADED = {'error': {'code': 'DATA_NOT_LOADED', 'message': '数据未加载'}}
+
 
 def _get_analyzer():
     df = load_orders_df()
@@ -19,12 +21,12 @@ def delivery():
     """GET /api/analysis/delivery?group_by=warehouse_block"""
     analyzer = _get_analyzer()
     if analyzer is None:
-        return jsonify({'error': '数据未加载'}), 500
+        return jsonify(_ERROR_NOT_LOADED), 500
 
     group_by = request.args.get('group_by', 'warehouse_block')
     valid = ('warehouse_block', 'mode_of_shipment', 'product_importance', 'gender')
     if group_by not in valid:
-        return jsonify({'error': f'无效的 group_by，可选: {valid}'}), 400
+        return jsonify({'error': {'code': 'INVALID_PARAM', 'message': f'无效的 group_by，可选: {valid}'}}), 400
 
     result = analyzer.delivery_by_dimension(group_by)
     return jsonify(result.to_dict(orient='records'))
@@ -35,7 +37,7 @@ def cost():
     """GET /api/analysis/cost — 成本分析"""
     analyzer = _get_analyzer()
     if analyzer is None:
-        return jsonify({'error': '数据未加载'}), 500
+        return jsonify(_ERROR_NOT_LOADED), 500
 
     result = analyzer.cost_analysis()
     return jsonify({
@@ -49,7 +51,7 @@ def correlation():
     """GET /api/analysis/correlation — 相关性矩阵"""
     analyzer = _get_analyzer()
     if analyzer is None:
-        return jsonify({'error': '数据未加载'}), 500
+        return jsonify(_ERROR_NOT_LOADED), 500
 
     corr = analyzer.correlation_analysis()
     return jsonify(corr.to_dict())
@@ -60,7 +62,7 @@ def customer():
     """GET /api/analysis/customer — 客户分析"""
     analyzer = _get_analyzer()
     if analyzer is None:
-        return jsonify({'error': '数据未加载'}), 500
+        return jsonify(_ERROR_NOT_LOADED), 500
 
     result = analyzer.customer_analysis()
     return jsonify({
@@ -74,7 +76,7 @@ def insights():
     """GET /api/analysis/insights — 自动生成洞察"""
     analyzer = _get_analyzer()
     if analyzer is None:
-        return jsonify({'error': '数据未加载'}), 500
+        return jsonify(_ERROR_NOT_LOADED), 500
 
     analyzer.generate_summary()
     return jsonify({'insights': analyzer.get_insights()})

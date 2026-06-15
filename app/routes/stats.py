@@ -12,7 +12,7 @@ def overview():
     """GET /api/stats/overview — 汇总指标"""
     df = load_orders_df()
     if df is None:
-        return jsonify({'error': '数据未加载，请先运行 init_db.py'}), 500
+        return jsonify({'error': {'code': 'DATA_NOT_LOADED', 'message': '数据未加载，请先运行 init_db.py'}}), 500
 
     analyzer = LogisticsAnalyzer(df)
     stats = analyzer.basic_stats()

@@ -17,8 +17,8 @@ st.title('📊 数据概览')
 
 try:
     df = load_data()
-except Exception:
-    st.error('数据未加载')
+except Exception as e:
+    st.error(f'数据未加载: {e}')
     st.stop()
 
 # 数据质量
