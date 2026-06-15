@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+.env
+
+# Database
+*.db
+*.sqlite3
+
+# Data (large files, keep only structure)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Output
+data/output/charts/*.png
+data/output/reports/*.md
+!data/output/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# OS
+desktop.ini
